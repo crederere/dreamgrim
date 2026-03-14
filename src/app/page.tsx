@@ -453,59 +453,90 @@ export default function HomePage() {
       <SectionMist variant="mixed" />
 
       {/* ═══════════════════════════════════════════
-          HOW IT WORKS — Glowing vertical timeline
+          HOW IT WORKS — Immersive visual journey
       ═══════════════════════════════════════════ */}
-      <section className="relative overflow-hidden" style={{ padding: "clamp(5rem, 12vw, 10rem) 0" }}>
+      <section className="relative overflow-hidden" style={{ padding: "clamp(6rem, 14vw, 12rem) 0" }}>
+        {/* Full atmospheric backdrop */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Image src="/images/section-clouds.png" alt="" fill className="object-cover opacity-[0.04] mix-blend-screen" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_40%_40%,rgba(109,60,239,0.05),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_70%_70%,rgba(245,197,66,0.025),transparent)]" />
+        </div>
+
         {/* Floating moon with parallax */}
         <motion.div
           style={{ y: floatY3 }}
-          className="absolute right-[3%] top-[5%] w-[250px] h-[250px] pointer-events-none hidden lg:block"
+          className="absolute right-[2%] top-[5%] w-[300px] h-[300px] pointer-events-none hidden lg:block"
         >
-          <Image src="/images/hero-moon.png" alt="" fill className="object-contain opacity-[0.035]" />
-          <div className="absolute inset-0 bg-glow-purple opacity-15 animate-breathe-deep" />
+          <Image src="/images/hero-moon.png" alt="" fill className="object-contain opacity-[0.04]" />
+          <div className="absolute inset-0 bg-glow-purple opacity-20 animate-breathe-deep" />
         </motion.div>
 
-        {/* Ambient glow */}
-        <div className="absolute top-[40%] left-[10%] w-[300px] h-[300px] rounded-full bg-primary-500/[0.015] blur-[80px] pointer-events-none" />
+        {/* Floating gallery artwork — adds visual richness */}
+        <motion.div
+          style={{ y: floatY1 }}
+          className="absolute left-[3%] bottom-[10%] w-[180px] h-[180px] pointer-events-none hidden lg:block"
+        >
+          <div className="relative opacity-25 rotate-[-6deg]">
+            <div className="absolute -inset-3 bg-primary-500/[0.04] rounded-2xl blur-xl" />
+            <div className="rounded-2xl overflow-hidden">
+              <Image src="/images/gallery-3.png" alt="" width={180} height={180} className="object-cover" />
+            </div>
+          </div>
+        </motion.div>
 
-        <div className="relative mx-auto max-w-3xl px-5 sm:px-8">
-          <Reveal className="text-center mb-16">
+        {/* Ambient orbs */}
+        <div className="absolute top-[30%] left-[8%] w-[250px] h-[250px] rounded-full bg-primary-500/[0.02] blur-[70px] animate-breathe pointer-events-none" />
+        <div className="absolute bottom-[20%] right-[10%] w-[200px] h-[200px] rounded-full bg-gold-400/[0.015] blur-[50px] animate-breathe-deep pointer-events-none" />
+
+        <div className="relative mx-auto max-w-4xl px-5 sm:px-8">
+          <Reveal className="text-center mb-20">
             <p className="text-[11px] tracking-[0.3em] text-primary-400/30 uppercase mb-3">How It Works</p>
-            <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.6rem,4vw,2.8rem)] font-bold text-text-primary">
+            <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.8rem,5vw,3rem)] font-bold text-text-primary leading-tight">
               <span className="text-gradient-gold">3단계</span>로 끝
             </h2>
           </Reveal>
 
-          <div className="relative">
-            {/* Glowing vertical line */}
-            <div className="absolute left-[18px] sm:left-[22px] top-4 bottom-4 glow-line-v" />
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
-              { n: "01", title: "꿈을 적어주세요", desc: "어젯밤 꾼 꿈을 자유롭게 적어주세요. 기억나는 만큼만 괜찮아요.", accent: "primary" },
-              { n: "02", title: "AI가 분석합니다", desc: "해몽학과 심리학을 결합한 AI가 꿈의 의미를 해석하고, 아트워크를 그립니다.", accent: "gold" },
-              { n: "03", title: "운세와 행운 번호", desc: "재물운 · 연애운 · 건강운 · 직장운과 행운 번호 6개까지 한 번에.", accent: "primary" },
+              { n: "01", title: "꿈을 적어주세요", desc: "어젯밤 꾼 꿈을 자유롭게 적어주세요. 기억나는 만큼만 괜찮아요.", accent: "primary", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
+              { n: "02", title: "AI가 분석합니다", desc: "해몽학과 심리학을 결합한 AI가 꿈의 의미를 해석하고, 아트워크를 그립니다.", accent: "gold", icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" },
+              { n: "03", title: "운세와 행운 번호", desc: "재물운 · 연애운 · 건강운 · 직장운과 행운 번호 6개까지 한 번에.", accent: "primary", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" },
             ].map((item, i) => (
-              <Reveal key={item.n} delay={i * 0.12}>
-                <div className="flex gap-6 sm:gap-8 py-8 relative">
-                  {/* Glowing dot */}
-                  <div className="relative z-10 shrink-0">
-                    <div className={`w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] rounded-full border flex items-center justify-center ${
-                      item.accent === "gold"
-                        ? "border-gold-400/20 bg-surface-0"
-                        : "border-primary-400/15 bg-surface-0"
-                    }`}>
-                      <span className={`text-[13px] sm:text-[14px] font-bold tabular-nums ${
-                        item.accent === "gold" ? "text-gold-400/50" : "text-primary-400/40"
-                      }`}>{item.n}</span>
+              <Reveal key={item.n} delay={i * 0.15}>
+                <div className="group relative glass rounded-2xl p-8 text-center h-full transition-all duration-700 hover:-translate-y-2 hover:border-white/[0.06]">
+                  {/* Hover glow */}
+                  <div className={`absolute inset-0 rounded-2xl transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none ${
+                    item.accent === "gold"
+                      ? "bg-[radial-gradient(ellipse_at_center,rgba(245,197,66,0.02),transparent_70%)]"
+                      : "bg-[radial-gradient(ellipse_at_center,rgba(109,60,239,0.03),transparent_70%)]"
+                  }`} />
+
+                  <div className="relative">
+                    {/* Icon with glow */}
+                    <div className="relative mx-auto mb-6 w-14 h-14">
+                      <div className={`absolute inset-0 rounded-full blur-xl ${
+                        item.accent === "gold" ? "bg-gold-400/[0.08]" : "bg-primary-500/[0.08]"
+                      }`} />
+                      <div className={`relative w-14 h-14 rounded-full border flex items-center justify-center ${
+                        item.accent === "gold"
+                          ? "border-gold-400/15 bg-gold-400/[0.03]"
+                          : "border-primary-400/10 bg-primary-500/[0.03]"
+                      }`}>
+                        <svg className={`w-5 h-5 ${
+                          item.accent === "gold" ? "text-gold-400/40" : "text-primary-400/35"
+                        }`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                        </svg>
+                      </div>
                     </div>
-                    {/* Glow behind dot */}
-                    <div className={`absolute inset-0 rounded-full blur-lg -z-10 ${
-                      item.accent === "gold" ? "bg-gold-400/[0.06]" : "bg-primary-500/[0.06]"
-                    }`} />
-                  </div>
-                  <div className="pt-1.5 sm:pt-2">
-                    <h3 className="text-[16px] font-semibold text-text-primary/85 mb-2">{item.title}</h3>
-                    <p className="text-[13px] text-text-muted/35 leading-relaxed">{item.desc}</p>
+
+                    <span className={`text-[11px] font-bold tabular-nums tracking-wider ${
+                      item.accent === "gold" ? "text-gold-400/30" : "text-primary-400/25"
+                    }`}>{item.n}</span>
+
+                    <h3 className="text-[16px] font-semibold text-text-primary/85 mt-2 mb-3">{item.title}</h3>
+                    <p className="text-[13px] text-text-muted/30 leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               </Reveal>
@@ -517,70 +548,81 @@ export default function HomePage() {
       <SectionMist variant="gold" />
 
       {/* ═══════════════════════════════════════════
-          REPORT PREVIEW — immersive with deep layers
+          REPORT PREVIEW — Full immersive phone-style mockup
       ═══════════════════════════════════════════ */}
-      <section className="relative overflow-hidden" style={{ padding: "clamp(5rem, 12vw, 10rem) 0" }}>
-        {/* Multi-layer atmospheric bg */}
+      <section className="relative overflow-hidden" style={{ padding: "clamp(6rem, 14vw, 12rem) 0" }}>
+        {/* Deep atmospheric layers */}
         <div className="absolute inset-0 pointer-events-none">
-          <Image src="/images/section-clouds.png" alt="" fill className="object-cover opacity-[0.05] mix-blend-screen" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_30%_50%,rgba(109,60,239,0.05),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_70%_60%,rgba(245,197,66,0.025),transparent)]" />
+          <Image src="/images/hero-mist.png" alt="" fill className="object-cover opacity-[0.04] mix-blend-screen" />
+          <Image src="/images/section-clouds.png" alt="" fill className="object-cover opacity-[0.04] mix-blend-screen" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_40%_40%,rgba(109,60,239,0.06),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_70%_60%,rgba(245,197,66,0.03),transparent)]" />
         </div>
 
         {/* Ambient orbs */}
-        <div className="absolute top-[10%] right-[5%] w-[250px] h-[250px] rounded-full bg-primary-500/[0.02] blur-[70px] animate-breathe-deep pointer-events-none" />
-        <div className="absolute bottom-[15%] left-[8%] w-[200px] h-[200px] rounded-full bg-gold-400/[0.015] blur-[50px] animate-breathe pointer-events-none" />
+        <div className="absolute top-[10%] right-[5%] w-[300px] h-[300px] rounded-full bg-primary-500/[0.02] blur-[80px] animate-breathe-deep pointer-events-none" />
+        <div className="absolute bottom-[15%] left-[5%] w-[250px] h-[250px] rounded-full bg-gold-400/[0.015] blur-[60px] animate-breathe pointer-events-none" />
+
+        {/* Mystic ring */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none animate-mystic-ring" style={{ animationDuration: "100s" }}>
+          <svg width="700" height="700" viewBox="0 0 700 700" className="opacity-[0.015]">
+            <circle cx="350" cy="350" r="320" fill="none" stroke="rgba(245,197,66,0.4)" strokeWidth="0.5" strokeDasharray="5 18" />
+          </svg>
+        </div>
 
         <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
-          <Reveal className="text-center mb-16">
-            <p className="text-[11px] tracking-[0.3em] text-gold-400/40 uppercase mb-3">Report Preview</p>
-            <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.6rem,4vw,2.8rem)] font-bold text-text-primary">
+          <Reveal className="text-center mb-20">
+            <p className="text-[11px] tracking-[0.3em] text-gold-400/35 uppercase mb-3">Report Preview</p>
+            <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.8rem,5vw,3rem)] font-bold text-text-primary leading-tight">
               이런 <span className="text-gradient-gold">리포트</span>를 받아보세요
             </h2>
+            <p className="mt-4 text-[13px] text-text-muted/25 max-w-md mx-auto">꿈 하나로 해몽, 운세, 아트워크, 행운 번호까지</p>
           </Reveal>
 
           <Reveal>
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-start">
-              {/* Artwork with glow ring */}
-              <div className="lg:col-span-2 relative">
-                <div className="absolute -inset-3 bg-gradient-to-br from-primary-500/[0.06] via-transparent to-gold-400/[0.04] rounded-3xl blur-xl" />
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary-900/40">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
+              {/* Artwork with dramatic glow */}
+              <div className="relative mx-auto lg:mx-0 max-w-[380px] w-full">
+                {/* Multi-layer glow */}
+                <div className="absolute -inset-8 bg-gradient-to-br from-primary-500/[0.05] via-transparent to-gold-400/[0.04] rounded-[2rem] blur-2xl" />
+                <div className="absolute -inset-4 bg-primary-500/[0.02] rounded-3xl blur-xl animate-breathe-deep" />
+                <div className="relative rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(109,60,239,0.1)]">
                   <div className="aspect-[3/4] relative">
-                    <Image src="/images/report-preview.png" alt="꿈 아트워크" fill className="object-cover" sizes="(max-width:1024px) 100vw, 40vw" />
+                    <Image src="/images/report-preview.png" alt="꿈 아트워크" fill className="object-cover" sizes="(max-width:1024px) 100vw, 50vw" />
                   </div>
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface-0/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 z-10">
-                    <p className="text-[11px] text-white/40 tracking-wider">AI Generated Artwork</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-surface-0/70 via-transparent to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-5 z-10">
+                    <p className="text-[10px] text-white/30 tracking-[0.2em] uppercase">AI Generated Dream Artwork</p>
+                    <p className="text-[14px] text-white/70 font-medium mt-1">투명한 바다 위, 하늘을 나는 고래</p>
                   </div>
                 </div>
               </div>
 
-              {/* Report cards */}
-              <div className="lg:col-span-3 space-y-4">
+              {/* Report cards — stacked with stagger */}
+              <div className="space-y-4">
                 <motion.div
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.9, delay: 0.2 }}
                   className="glass rounded-2xl p-6"
                 >
-                  <h3 className="text-[11px] tracking-[0.15em] text-primary-400/50 uppercase mb-3 font-medium">꿈 해석</h3>
-                  <p className="text-[14px] text-text-primary/85 leading-[1.85] font-[family-name:var(--font-body)]">
-                    이 꿈은 <span className="text-primary-300/80">자유에 대한 깊은 갈망</span>을 반영합니다.
+                  <h3 className="text-[10px] tracking-[0.2em] text-primary-400/40 uppercase mb-3 font-medium">해몽</h3>
+                  <p className="text-[14px] text-text-primary/80 leading-[1.9]">
+                    이 꿈은 <span className="text-primary-300/70">자유에 대한 깊은 갈망</span>을 반영합니다.
                     투명한 바다는 감정의 명료함을, 하늘의 고래는 무의식에서 올라오는
-                    <span className="text-gold-400/70"> 거대한 직관력</span>을 상징합니다.
+                    <span className="text-gold-400/60"> 거대한 직관력</span>을 상징합니다.
                   </p>
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.9, delay: 0.35 }}
                   className="glass rounded-2xl p-6"
                 >
-                  <h3 className="text-[11px] tracking-[0.15em] text-primary-400/50 uppercase mb-4 font-medium">오늘의 운세</h3>
+                  <h3 className="text-[10px] tracking-[0.2em] text-primary-400/40 uppercase mb-4 font-medium">오늘의 운세</h3>
                   <div className="space-y-3">
                     <FortuneBar label="재물운" score={78} delay={0} />
                     <FortuneBar label="연애운" score={85} delay={0.1} />
@@ -590,13 +632,13 @@ export default function HomePage() {
                 </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.9, delay: 0.5 }}
                   className="glass rounded-2xl p-6"
                 >
-                  <h3 className="text-[11px] tracking-[0.15em] text-gold-400/50 uppercase mb-4 font-medium">행운 번호</h3>
+                  <h3 className="text-[10px] tracking-[0.2em] text-gold-400/40 uppercase mb-4 font-medium">행운 번호</h3>
                   <div className="flex gap-3 justify-center">
                     {[7, 14, 23, 31, 38, 42].map((n, i) => (
                       <motion.div
@@ -605,14 +647,16 @@ export default function HomePage() {
                         whileInView={{ scale: 1, rotateY: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.6 + i * 0.1, type: "spring", stiffness: 180, damping: 15 }}
-                        className="lucky-ball flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full text-surface-0 text-base sm:text-lg font-bold"
+                        className="relative"
                       >
-                        {n}
+                        <div className="absolute -inset-1.5 bg-gold-400/[0.05] rounded-full blur-md" />
+                        <div className="relative lucky-ball flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full text-surface-0 text-base sm:text-lg font-bold">
+                          {n}
+                        </div>
                       </motion.div>
                     ))}
                   </div>
-                  {/* Reflection */}
-                  <div className="mt-3 mx-auto w-40 h-4 bg-glow-gold opacity-15 blur-xl" />
+                  <div className="mt-3 mx-auto w-40 h-4 bg-glow-gold opacity-10 blur-xl" />
                 </motion.div>
 
                 <motion.div
@@ -624,7 +668,7 @@ export default function HomePage() {
                 >
                   <Link
                     href="/dream"
-                    className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-gold-400 to-gold-500 px-8 py-3.5 text-[14px] font-semibold text-surface-0 transition-all duration-600 hover:shadow-[0_0_40px_rgba(245,197,66,0.2),0_0_80px_rgba(245,197,66,0.06)]"
+                    className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-gold-400 to-gold-500 px-9 py-3.5 text-[14px] font-semibold text-surface-0 transition-all duration-600 hover:shadow-[0_0_40px_rgba(245,197,66,0.2),0_0_80px_rgba(245,197,66,0.06)]"
                   >
                     내 꿈 리포트 받기
                     <svg className="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

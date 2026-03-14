@@ -34,6 +34,12 @@ export default function DreamInputPage() {
   const [step, setStep] = useState<"input" | "style">("input");
   const [error, setError] = useState("");
 
+  // Optional user context
+  const [showContext, setShowContext] = useState(false);
+  const [gender, setGender] = useState<"" | "male" | "female" | "other">("");
+  const [birthDate, setBirthDate] = useState("");
+  const [concern, setConcern] = useState("");
+
   const charCount = dreamText.length;
   const isValid = charCount >= MIN_DREAM_TEXT_LENGTH;
 
@@ -61,6 +67,9 @@ export default function DreamInputPage() {
           artwork_style: artworkStyle,
           is_tae_mong: isTaeMong,
           tae_name: taeName || undefined,
+          gender: gender || undefined,
+          birth_date: birthDate || undefined,
+          concern: concern || undefined,
         }),
       });
 
@@ -70,7 +79,6 @@ export default function DreamInputPage() {
         throw new Error(data.error || "분석 중 오류가 발생했습니다");
       }
 
-      // Store result in sessionStorage and navigate
       sessionStorage.setItem("dreamResult", JSON.stringify({
         ...data,
         dream_text: fullText,
@@ -144,7 +152,7 @@ export default function DreamInputPage() {
                   </p>
                 </div>
 
-                {/* Textarea — floating in space feel */}
+                {/* Textarea */}
                 <div className="relative group">
                   <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-500/5 via-transparent to-gold-400/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-700 blur-xl" />
                   <textarea
@@ -162,7 +170,7 @@ export default function DreamInputPage() {
                   </div>
                 </div>
 
-                {/* Keywords — floating tags */}
+                {/* Keywords */}
                 <div className="mt-8">
                   <p className="text-[11px] text-text-muted/30 tracking-[0.15em] uppercase mb-3">꿈 키워드</p>
                   <div className="flex flex-wrap gap-2">
@@ -185,8 +193,77 @@ export default function DreamInputPage() {
                   </div>
                 </div>
 
-                {/* Taemong */}
+                {/* Optional context — collapsible, non-intrusive */}
                 <div className="mt-8">
+                  <button
+                    onClick={() => setShowContext(!showContext)}
+                    className="flex items-center gap-2 text-[12px] text-text-muted/30 hover:text-text-muted/50 transition-colors duration-300"
+                  >
+                    <svg
+                      className={`w-3 h-3 transition-transform duration-300 ${showContext ? "rotate-90" : ""}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                    더 정확한 해몽을 원하시면 <span className="text-primary-400/40">(선택)</span>
+                  </button>
+
+                  <AnimatePresence>
+                    {showContext && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-4 space-y-3">
+                          {/* Gender */}
+                          <div className="flex gap-2">
+                            {[
+                              { value: "female", label: "여성" },
+                              { value: "male", label: "남성" },
+                              { value: "other", label: "기타" },
+                            ].map((g) => (
+                              <button
+                                key={g.value}
+                                onClick={() => setGender(gender === g.value ? "" : g.value as typeof gender)}
+                                className={`rounded-full px-4 py-1.5 text-[12px] transition-all duration-300 ${
+                                  gender === g.value
+                                    ? "bg-primary-500/10 text-primary-300/70 border border-primary-500/12"
+                                    : "bg-white/[0.02] text-text-muted/30 border border-white/[0.03] hover:border-white/[0.06]"
+                                }`}
+                              >
+                                {g.label}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Birth date */}
+                          <input
+                            type="date"
+                            value={birthDate}
+                            onChange={(e) => setBirthDate(e.target.value)}
+                            placeholder="생년월일"
+                            className="w-full rounded-xl bg-white/[0.02] border border-white/[0.04] focus:border-primary-500/12 p-3 text-[13px] text-text-primary placeholder:text-text-muted/25 outline-none transition-colors duration-300 [color-scheme:dark]"
+                          />
+
+                          {/* Concern */}
+                          <input
+                            type="text"
+                            value={concern}
+                            onChange={(e) => setConcern(e.target.value.slice(0, 200))}
+                            placeholder="요즘 고민이나 관심사 (예: 이직 고민, 연애 시작)"
+                            className="w-full rounded-xl bg-white/[0.02] border border-white/[0.04] focus:border-primary-500/12 p-3 text-[13px] text-text-primary placeholder:text-text-muted/25 outline-none transition-colors duration-300"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Taemong */}
+                <div className="mt-6">
                   <div className="glass rounded-xl p-4 border-white/[0.03]">
                     <label className="flex items-center gap-3 cursor-pointer">
                       <div
@@ -226,7 +303,7 @@ export default function DreamInputPage() {
                   </div>
                 </div>
 
-                {/* Next button */}
+                {/* Next */}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setStep("style")}

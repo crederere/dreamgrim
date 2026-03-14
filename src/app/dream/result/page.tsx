@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -42,10 +42,12 @@ export default function DreamResultPage() {
   const [result, setResult] = useState<DreamResult | null>(null);
   const [isRevealing, setIsRevealing] = useState(true);
   const [loadingIdx, setLoadingIdx] = useState(0);
-  const [revealPhase, setRevealPhase] = useState(0); // 0=loading, 1=artwork reveal, 2=full
+  const [revealPhase, setRevealPhase] = useState(0);
+  const [isPaid, setIsPaid] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showShareTip, setShowShareTip] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
-  // Load result from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem("dreamResult");
     if (stored) {
@@ -53,7 +55,6 @@ export default function DreamResultPage() {
     }
   }, []);
 
-  // Loading message cycle
   useEffect(() => {
     if (!isRevealing) return;
     const interval = setInterval(() => {
@@ -65,10 +66,8 @@ export default function DreamResultPage() {
     return () => clearInterval(interval);
   }, [isRevealing]);
 
-  // Reveal sequence
   useEffect(() => {
     if (!result) return;
-    // After loading messages, reveal artwork
     const t1 = setTimeout(() => setRevealPhase(1), 2000);
     const t2 = setTimeout(() => {
       setRevealPhase(2);
@@ -77,14 +76,38 @@ export default function DreamResultPage() {
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [result]);
 
-  const handleCopy = () => {
+  const handleUnlock = useCallback(() => {
+    setIsPaid(true);
+    if (result) {
+      const updated = { ...result, is_paid: true };
+      setResult(updated);
+      sessionStorage.setItem("dreamResult", JSON.stringify(updated));
+    }
+  }, [result]);
+
+  const handleCopyLink = useCallback(() => {
     if (!result) return;
-    navigator.clipboard.writeText(`https://dreamgrim.com/shared/${result.share_token}`);
+    navigator.clipboard.writeText(`https://dreamgrim.com/dream/${result.share_token}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
+  }, [result]);
 
-  const isPaid = result?.is_paid ?? false;
+  const handleShareKakao = useCallback(() => {
+    setShowShareTip(true);
+  }, []);
+
+  const handleShareInstagram = useCallback(() => {
+    setShowShareTip(true);
+  }, []);
+
+  /* Render interpretation with line breaks */
+  const renderInterpretation = (text: string) => {
+    return text.split(/\\n\\n|\n\n|\n/).map((paragraph, i) => (
+      <p key={i} className={i > 0 ? "mt-3" : ""}>
+        {paragraph}
+      </p>
+    ));
+  };
 
   /* ─── No data ─── */
   if (!result) {
@@ -102,13 +125,11 @@ export default function DreamResultPage() {
     );
   }
 
-  /* ─── Loading / Reveal animation ─── */
+  /* ─── Loading / Reveal ─── */
   if (isRevealing) {
     return (
       <div className="min-h-screen bg-surface-0 overflow-hidden">
         <StarField />
-
-        {/* Atmospheric layers */}
         <div className="fixed inset-0 pointer-events-none">
           <Image src="/images/hero-mist.png" alt="" fill className="object-cover opacity-15 mix-blend-screen" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(4,2,12,0.9)_80%)]" />
@@ -117,12 +138,7 @@ export default function DreamResultPage() {
         <div className="relative z-10 min-h-screen flex items-center justify-center">
           <AnimatePresence mode="wait">
             {revealPhase === 0 && (
-              <motion.div
-                key="loading"
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="text-center px-6 max-w-sm"
-              >
-                {/* Mystical orb */}
+              <motion.div key="loading" exit={{ opacity: 0, scale: 0.9 }} className="text-center px-6 max-w-sm">
                 <div className="relative mx-auto mb-14 h-32 w-32">
                   <motion.div
                     animate={{ scale: [1, 1.4, 1], opacity: [0.1, 0.3, 0.1] }}
@@ -182,13 +198,8 @@ export default function DreamResultPage() {
               >
                 <div className="w-[70vmin] max-w-[400px] aspect-square rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(109,60,239,0.15)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={result.artwork_url}
-                    alt="꿈 아트워크"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={result.artwork_url} alt="꿈 아트워크" className="w-full h-full object-cover" />
                 </div>
-                {/* Glow ring */}
                 <div className="absolute -inset-4 rounded-[2rem] border border-primary-500/10 animate-breathe pointer-events-none" />
               </motion.div>
             )}
@@ -203,9 +214,8 @@ export default function DreamResultPage() {
     <div className="relative min-h-screen bg-surface-0">
       <StarField />
 
-      {/* Atmospheric bg */}
       <div className="fixed inset-0 pointer-events-none">
-        <Image src="/images/hero-mist.png" alt="" fill className="object-cover opacity-8 mix-blend-screen" />
+        <Image src="/images/hero-mist.png" alt="" fill className="object-cover opacity-[0.06] mix-blend-screen" />
       </div>
 
       <Header />
@@ -222,46 +232,48 @@ export default function DreamResultPage() {
             </Link>
           </motion.div>
 
-          {/* ─── Artwork ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(109,60,239,0.1)]"
-          >
-            <div className="aspect-square relative bg-surface-100">
-              {result.artwork_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={result.artwork_url} alt="꿈 아트워크" className="w-full h-full object-cover" />
-              ) : (
-                <Image src="/images/gallery-1.png" alt="꿈 아트워크" fill className="object-cover" />
-              )}
-              {!isPaid && (
+          {/* ═══ SHAREABLE CARD ═══ */}
+          <div ref={shareCardRef}>
+            {/* Artwork */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="relative rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(109,60,239,0.1)]"
+            >
+              <div className="aspect-square relative bg-surface-100">
+                {result.artwork_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={result.artwork_url} alt="꿈 아트워크" className="w-full h-full object-cover" />
+                ) : (
+                  <Image src="/images/gallery-1.png" alt="꿈 아트워크" fill className="object-cover" />
+                )}
+                {/* Watermark */}
                 <div className="absolute inset-0 z-10 flex items-end justify-center pb-4">
-                  <span className="text-[9px] text-white/20 tracking-[0.3em] uppercase">dreamgrim.com</span>
+                  <span className="text-[9px] text-white/15 tracking-[0.3em] uppercase">dreamgrim.com</span>
                 </div>
-              )}
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
 
-          {/* Dream text + keywords */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-8"
-          >
-            <p className="text-[13px] text-text-muted/40 italic leading-relaxed">
-              &ldquo;{result.dream_text.slice(0, 200)}{result.dream_text.length > 200 ? "..." : ""}&rdquo;
-            </p>
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {result.keywords.map((kw) => (
-                <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-primary-500/6 text-primary-300/40 border border-primary-500/6">
-                  {kw}
-                </span>
-              ))}
-            </div>
-          </motion.div>
+            {/* Dream text + keywords */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mt-8"
+            >
+              <p className="text-[13px] text-text-muted/40 italic leading-relaxed">
+                &ldquo;{result.dream_text.replace(/\n\[사용자 정보\][\s\S]*$/, "").slice(0, 200)}{result.dream_text.length > 200 ? "..." : ""}&rdquo;
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {result.keywords.map((kw) => (
+                  <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-primary-500/6 text-primary-300/40 border border-primary-500/6">
+                    {kw}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </div>
 
           <div className="divider-glow my-8" />
 
@@ -273,9 +285,9 @@ export default function DreamResultPage() {
             className="glass rounded-2xl p-6 border-white/[0.03]"
           >
             <h3 className="text-[10px] tracking-[0.2em] text-primary-400/40 uppercase mb-3 font-medium">해몽</h3>
-            <p className="text-[15px] text-text-primary/80 leading-[1.9]">
-              {result.interpretation}
-            </p>
+            <div className="text-[15px] text-text-primary/80 leading-[1.9]">
+              {renderInterpretation(result.interpretation)}
+            </div>
           </motion.div>
 
           {/* ─── Fortune ─── */}
@@ -324,9 +336,49 @@ export default function DreamResultPage() {
                 );
               })}
             </div>
+            <div className="mt-3 mx-auto w-32 h-4 bg-glow-gold opacity-10 blur-lg" />
           </motion.div>
 
-          {/* ─── Psychological (locked) ─── */}
+          {/* ─── Lucky Info (paid) ─── */}
+          <AnimatePresence>
+            {isPaid && (
+              <motion.div
+                initial={{ opacity: 0, y: 16, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                transition={{ duration: 0.6 }}
+                className="mt-4 glass rounded-2xl p-6 border-white/[0.03]"
+              >
+                <h3 className="text-[10px] tracking-[0.2em] text-gold-400/40 uppercase mb-4 font-medium">행운의 지도</h3>
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-[10px] text-text-muted/25 mb-1">행운의 색</p>
+                    <p className="text-[14px] text-text-primary/70 font-medium">{result.detailed_report.lucky_color}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-text-muted/25 mb-1">행운의 방향</p>
+                    <p className="text-[14px] text-text-primary/70 font-medium">{result.detailed_report.lucky_direction}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-text-muted/25 mb-1">행운의 시간</p>
+                    <p className="text-[14px] text-text-primary/70 font-medium">{result.detailed_report.lucky_time}</p>
+                  </div>
+                </div>
+                <div className="divider-glow my-5" />
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-[10px] text-fortune-high/40 mb-1">오늘 하면 좋은 것</p>
+                    <p className="text-[13px] text-text-primary/70 leading-relaxed">{result.detailed_report.do_today}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-fortune-low/40 mb-1">오늘 피해야 할 것</p>
+                    <p className="text-[13px] text-text-primary/70 leading-relaxed">{result.detailed_report.avoid_today}</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ─── Psychological ─── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -335,10 +387,14 @@ export default function DreamResultPage() {
           >
             <h3 className="text-[10px] tracking-[0.2em] text-primary-400/40 uppercase mb-3 font-medium">심리 분석</h3>
             {isPaid ? (
-              <p className="text-[15px] text-text-primary/80 leading-[1.9]">{result.detailed_report.psychological_insight}</p>
+              <div className="text-[15px] text-text-primary/80 leading-[1.9]">
+                {renderInterpretation(result.detailed_report.psychological_insight)}
+              </div>
             ) : (
               <div className="relative">
-                <p className="text-[15px] text-text-primary/80 leading-[1.9] content-locked">{result.detailed_report.psychological_insight}</p>
+                <div className="text-[15px] text-text-primary/80 leading-[1.9] content-locked">
+                  {renderInterpretation(result.detailed_report.psychological_insight)}
+                </div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="flex items-center gap-2 text-[12px] text-text-muted/30">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -359,7 +415,6 @@ export default function DreamResultPage() {
               transition={{ delay: 0.7 }}
               className="mt-10 rounded-2xl overflow-hidden relative"
             >
-              {/* BG glow */}
               <div className="absolute inset-0 bg-gradient-to-b from-primary-600/10 via-surface-100/50 to-surface-0 pointer-events-none" />
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[1px] bg-gradient-to-r from-transparent via-primary-500/20 to-transparent" />
 
@@ -376,8 +431,11 @@ export default function DreamResultPage() {
                   <span className="text-[12px] text-text-muted/40">원</span>
                 </div>
 
-                <button className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-600/90 to-primary-500/90 py-3.5 text-[14px] font-medium text-white transition-all duration-500 hover:shadow-[0_0_40px_rgba(109,60,239,0.15)] animate-gradient-shift">
-                  카카오페이로 결제하기
+                <button
+                  onClick={handleUnlock}
+                  className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-600/90 to-primary-500/90 py-3.5 text-[14px] font-medium text-white transition-all duration-500 hover:shadow-[0_0_40px_rgba(109,60,239,0.15)] animate-gradient-shift"
+                >
+                  전체 리포트 보기
                 </button>
 
                 <p className="mt-3 text-[10px] text-text-muted/20">카카오페이 · 토스페이먼츠</p>
@@ -385,31 +443,109 @@ export default function DreamResultPage() {
             </motion.div>
           )}
 
-          {/* ─── Share ─── */}
+          {/* ═══ SHARE SECTION ═══ */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-8 text-center"
+            className="mt-10"
           >
-            <p className="text-[12px] text-text-muted/30 mb-4">
-              공유하면 <span className="text-primary-400/50">무료 1회</span> 추가
-            </p>
-            <div className="flex justify-center gap-3">
-              {[
-                { label: "인스타그램", color: "from-pink-500/60 to-purple-600/60" },
-                { label: "카카오톡", color: "from-yellow-400/60 to-amber-400/60" },
-                { label: copied ? "복사됨" : "링크 복사", color: "from-white/[0.04] to-white/[0.06]", onClick: handleCopy },
-              ].map((item) => (
-                <button key={item.label} onClick={item.onClick} className="flex flex-col items-center gap-1.5 group">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${item.color} text-white/70 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
-                    <span className="text-[11px] font-medium">
-                      {item.label === "인스타그램" ? "IG" : item.label === "카카오톡" ? "KT" : "LK"}
-                    </span>
+            <div className="glass rounded-2xl p-6 border-white/[0.03]">
+              <div className="text-center mb-5">
+                <h3 className="text-[14px] font-medium text-text-primary/70 mb-1">
+                  이 꿈, 친구에게 보여줄래요?
+                </h3>
+                <p className="text-[12px] text-text-muted/30">
+                  공유하면 <span className="text-primary-400/50">무료 해몽 1회</span> 추가
+                </p>
+              </div>
+
+              <div className="flex justify-center gap-3 mb-4">
+                <button
+                  onClick={handleShareKakao}
+                  className="group flex flex-col items-center gap-2"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FEE500]/15 border border-[#FEE500]/10 transition-all duration-300 group-hover:scale-110 group-hover:border-[#FEE500]/25 group-hover:shadow-[0_0_20px_rgba(254,229,0,0.1)]">
+                    <span className="text-[14px] font-bold text-[#FEE500]/70">K</span>
                   </div>
-                  <span className="text-[10px] text-text-muted/25">{item.label}</span>
+                  <span className="text-[10px] text-text-muted/25">카카오톡</span>
                 </button>
-              ))}
+
+                <button
+                  onClick={handleShareInstagram}
+                  className="group flex flex-col items-center gap-2"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/10 to-purple-600/10 border border-pink-500/10 transition-all duration-300 group-hover:scale-110 group-hover:border-pink-500/20 group-hover:shadow-[0_0_20px_rgba(236,72,153,0.1)]">
+                    <span className="text-[14px] font-bold text-pink-400/70">IG</span>
+                  </div>
+                  <span className="text-[10px] text-text-muted/25">인스타그램</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: "꿈그림 - AI 꿈 해몽",
+                        text: `나의 꿈 키워드: ${result.keywords.join(", ")}`,
+                        url: `https://dreamgrim.com/dream/${result.share_token}`,
+                      }).catch(() => {});
+                    } else {
+                      handleCopyLink();
+                    }
+                  }}
+                  className="group flex flex-col items-center gap-2"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.06] transition-all duration-300 group-hover:scale-110 group-hover:border-white/[0.12] group-hover:shadow-[0_0_20px_rgba(167,139,255,0.05)]">
+                    <svg className="w-4 h-4 text-text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                    </svg>
+                  </div>
+                  <span className="text-[10px] text-text-muted/25">공유</span>
+                </button>
+
+                <button
+                  onClick={handleCopyLink}
+                  className="group flex flex-col items-center gap-2"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.06] transition-all duration-300 group-hover:scale-110 group-hover:border-white/[0.12]">
+                    {copied ? (
+                      <svg className="w-4 h-4 text-fortune-high/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-text-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-1.057a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.374" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-text-muted/25">{copied ? "복사됨!" : "링크 복사"}</span>
+                </button>
+              </div>
+
+              {/* Screenshot share tip */}
+              <AnimatePresence>
+                {showShareTip && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-3 p-4 rounded-xl bg-white/[0.02] border border-white/[0.03] text-center">
+                      <p className="text-[12px] text-text-muted/40 leading-relaxed">
+                        위의 아트워크를 <span className="text-primary-400/60">스크린샷</span>으로 캡처해서
+                        <br />스토리에 공유해보세요!
+                      </p>
+                      <button
+                        onClick={() => setShowShareTip(false)}
+                        className="mt-2 text-[11px] text-text-muted/20 hover:text-text-muted/40 transition-colors"
+                      >
+                        닫기
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
 
@@ -418,7 +554,7 @@ export default function DreamResultPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
-            className="mt-8 glass rounded-2xl p-6 text-center border-white/[0.03]"
+            className="mt-6 glass rounded-2xl p-6 text-center border-white/[0.03]"
           >
             <h4 className="text-[14px] font-medium text-text-primary/70 mb-1">이 꿈이 더 궁금하다면</h4>
             <p className="text-[12px] text-text-muted/30 mb-4">AI 꿈 상담사와 깊이 대화해보세요</p>
@@ -426,6 +562,24 @@ export default function DreamResultPage() {
               AI 상담 시작하기
               <span className="text-text-muted/25">2,900원</span>
             </button>
+          </motion.div>
+
+          {/* ─── Try Again ─── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="mt-8 text-center"
+          >
+            <Link
+              href="/dream"
+              className="inline-flex items-center gap-2 text-[13px] text-text-muted/30 hover:text-primary-400/50 transition-colors duration-500"
+            >
+              다른 꿈도 해몽해보기
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
           </motion.div>
         </div>
       </main>
